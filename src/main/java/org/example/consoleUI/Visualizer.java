@@ -1,5 +1,6 @@
 package org.example.consoleUI;
 
+import org.example.field.GameField;
 import org.example.field.fieldStructure.Node;
 import org.example.field.fieldStructure.Structure;
 import org.example.field.fieldStructure.TypeOfCell;
@@ -28,5 +29,6 @@ public class Visualizer {
             }
             System.out.println();
         }
+        System.out.println();
     }
 }
