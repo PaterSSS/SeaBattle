@@ -6,7 +6,7 @@ public class Ship implements ProtoShip{
     private int health;
     private final int size;
     private Position posOfShipHead;
-    private int shootingDistance;
+    private int  shootingDistance;
     OrientationOfShip orientation;
 
     public Ship(int size, Position position, OrientationOfShip orientation) {

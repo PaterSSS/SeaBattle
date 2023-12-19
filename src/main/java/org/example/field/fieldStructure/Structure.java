@@ -41,14 +41,14 @@ public class Structure {
             curNode.setUp(upperNode);
         }
     }
-    public Cell getCellByPosition(Position position) {
+    public Node getCellByPosition(Position position) {
         Node currNode = listOfHeads.get(position.getY());
         int i = 0;
         while (i < position.getX()) {
             currNode = currNode.getRight();
             i++;
         }
-        return currNode.getCell();
+        return currNode;
     }
     private Node getNodeOfLine(Node headNode, Integer index) {
         Node curr = headNode;
