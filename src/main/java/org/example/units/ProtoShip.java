@@ -7,7 +7,9 @@ public interface ProtoShip {
     int getSizeOfShip();
     int getShootingDistance();
     Position getHeadOfShip();
-    void getDamage();
+    void getDamage(int damage);
     boolean isAlive();
     OrientationOfShip getOrientation();
+    boolean isShipStuck();
+    void setStuck();
 }

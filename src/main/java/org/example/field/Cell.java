@@ -34,6 +34,9 @@ public class Cell {
         if (ship == null || this.ship != null) {
             return;
         }
+        if (typeOfCell == TypeOfCell.SHOAL) {
+            ship.setStuck();
+        }
         this.ship = ship;
         typeOfCell = TypeOfCell.PART_OF_SHIP;
     }

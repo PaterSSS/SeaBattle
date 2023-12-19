@@ -7,7 +7,8 @@ public class Ship implements ProtoShip{
     private final int size;
     private Position posOfShipHead;
     private int  shootingDistance;
-    OrientationOfShip orientation;
+    private OrientationOfShip orientation;
+    private boolean isStuck;
 
     public Ship(int size, Position position, OrientationOfShip orientation) {
         this.size = size;
@@ -45,8 +46,11 @@ public class Ship implements ProtoShip{
     }
 
     @Override
-    public void getDamage() {
-        health--;
+    public void getDamage(int damage) {
+        if (damage < 0) {
+            return;
+        }
+        health -= damage;
     }
 
     @Override
@@ -57,5 +61,13 @@ public class Ship implements ProtoShip{
     @Override
     public OrientationOfShip getOrientation() {
         return orientation;
+    }
+
+    @Override
+    public boolean isShipStuck() {
+        return isStuck;
+    }
+    public void setStuck() {
+        isStuck = true;
     }
 }

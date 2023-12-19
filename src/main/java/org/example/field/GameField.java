@@ -6,12 +6,14 @@ import org.example.units.OrientationOfShip;
 import org.example.units.ProtoShip;
 import org.example.units.Ship;
 
+import java.util.Random;
 import java.util.function.UnaryOperator;
 
 public class GameField {
     private Structure field;
     private final int fieldWidth;
     private final int fieldHeight;
+    private final Random random = new Random();
 
     public GameField(int width, int height) {
         this.fieldHeight = height;
@@ -79,13 +81,63 @@ public class GameField {
         }
         return true;
     }
+    public boolean moveShipRight(ProtoShip ship) {
+        OrientationOfShip orientation = ship.getOrientation();
+        if (orientation == OrientationOfShip.VERTICAL) {
+            return false;
+        }
+        Position shipPos = ship.getHeadOfShip();
+        Node head = field.getCellByPosition(shipPos);
+        if (!isHeadOfShipInProperDirection(ship, Node::getRight, head)) {
+            return false;
+        }
+        if (checkCollision(ship, Node::getRight)) {
+            return true;
+        }
+        head.getRight().getCell().shipSailTo(ship);
+        for (int i = 0; i < ship.getSizeOfShip() - 1; i++) {
+            head = head.getLeft();
+        }
 
+        head.getCell().shipSailedAway();
+        shipPos.setX(shipPos.getX() + 1);
+        return true;
+    }
+    private boolean isHeadOfShipInProperDirection(ProtoShip ship, UnaryOperator<Node> iterateWay, Node head) {
+        Node cellForTest = iterateWay.apply(head);
+        return !(cellForTest.getCell().getShip() == ship);
+    }
+    private boolean checkCollision(ProtoShip ship, UnaryOperator<Node> wayOfIterating) {
+        Node head = field.getCellByPosition(ship.getHeadOfShip());
+        head = wayOfIterating.apply(head);
+        TypeOfCell type = head.getCell().getTypeOfCell();
+        if (type == TypeOfCell.BARRIER) {
+            getDamageByCollision(ship);
+            return true;
+        } else if (type == TypeOfCell.PART_OF_SHIP) {
+            getDamageByCollision(ship);
+            getDamageByCollision(head.getCell().getShip());
+            return true;
+        }
+        return false;
+    }
+    private void getDamageByCollision(ProtoShip ship) {
+        int maximumHealthOfShip = ship.getSizeOfShip();
+        int damage = random.nextInt(maximumHealthOfShip) + 1;
+        ship.getDamage(damage);
+    }
     public static void main(String[] args) {
         GameField field1 = new GameField(20,10);
         Visualizer visualizer = new Visualizer(field1.field);
         visualizer.printField();
-        ProtoShip ship = new Ship(3,new Position(3,1), OrientationOfShip.VERTICAL);
+        ProtoShip ship = new Ship(5,new Position(10,1), OrientationOfShip.HORIZONTAL);
         field1.addShip(ship);
+        visualizer.printField();
+        field1.moveShipRight(ship);
+        visualizer.printField();
+        field1.moveShipRight(ship);
+        visualizer.printField();
+        field1.moveShipRight(ship);
         visualizer.printField();
     }
 }

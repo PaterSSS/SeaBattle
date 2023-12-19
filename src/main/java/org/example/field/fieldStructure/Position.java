@@ -3,8 +3,8 @@ package org.example.field.fieldStructure;
 import java.util.Objects;
 
 public class Position {
-    int x;
-    int y;
+    private int x;
+    private int y;
     public Position(int x, int y) {
         this.x = x;
         this.y = y;
@@ -15,7 +15,12 @@ public class Position {
     public int getY() {
         return y;
     }
-
+    public void setX(int x) {
+        this.x = x;
+    }
+    public void setY(int y) {
+        this.y = y;
+    }
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
