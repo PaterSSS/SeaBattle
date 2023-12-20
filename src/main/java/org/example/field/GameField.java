@@ -148,24 +148,94 @@ public class GameField {
         int damage = random.nextInt(maximumHealthOfShip) + 1;
         ship.getDamage(damage);
     }
+    public boolean clockwiseRotation(ProtoShip ship) {
+        int centerOfShip = ((ship.getSizeOfShip() + 2 - 1)/2);
+        int numberOfIteratingBack = ship.getSizeOfShip() - centerOfShip;
+        Node headOfShip = field.getCellByPosition(ship.getHeadOfShip());
+        OrientationOfShip orientation = ship.getOrientation();
+        UnaryOperator<Node> iteratingWay;
+        if (orientation == OrientationOfShip.HORIZONTAL) {
+            iteratingWay = (isHeadOfShipInProperDirection(ship, Node::getRight, headOfShip) ? Node::getLeft : Node::getRight);
+        } else {
+            iteratingWay = (isHeadOfShipInProperDirection(ship, Node::getDown, headOfShip) ? Node::getUp : Node::getDown);
+        }
+        Node centerOfShipNode = headOfShip;
+        for (int i = 0; i < numberOfIteratingBack; i++) {
+            centerOfShipNode = iteratingWay.apply(centerOfShipNode);
+        }
+        int countOfCellToCheckDown = numberOfIteratingBack;
+        int countOfCellToCheckUp = (ship.getSizeOfShip() % 2 == 0) ? countOfCellToCheckDown - 1 : countOfCellToCheckDown;
+
+        Node movingToTail = centerOfShipNode;
+        Node movingTOHead = centerOfShipNode;
+
+        Node newTail = null;
+        Node newHead = null;
+
+        UnaryOperator<Node> iterateCell = Node::getDown;
+        for (int i = 0; i < numberOfIteratingBack + 1; i++) {
+            Node tmp = movingTOHead;
+            int countToCheck = (i == 1) ? 0 : i;
+            for (int j = countToCheck; j < countOfCellToCheckDown; j++) {
+                tmp = iterateCell.apply(tmp);
+                TypeOfCell type = tmp.getCell().getTypeOfCell();
+                if (type == TypeOfCell.BARRIER || type == TypeOfCell.PART_OF_SHIP) {
+                    return false;
+                }
+            }
+            if (i == 0) {
+                newHead = tmp;
+            }
+            movingTOHead = movingTOHead.getRight();
+        }
+        UnaryOperator<Node> iterate = Node::getUp;
+        int cont = (ship.getSizeOfShip() < 3) ? 0 : ((ship.getSizeOfShip() + 2 - 1)/2);
+        for (int i = 0; i < cont; i++) {
+            Node tmp = movingToTail;
+            int countToCheck = (i == 1) ? 0 : i;
+            for (int j = countToCheck; j < countOfCellToCheckUp; j++) {
+                tmp = iterate.apply(tmp);
+                TypeOfCell type = tmp.getCell().getTypeOfCell();
+                if (type == TypeOfCell.BARRIER || type == TypeOfCell.PART_OF_SHIP) {
+                    return false;
+                }
+            }
+            if (i == 0) {
+                newTail = tmp;
+            }
+            movingToTail = movingToTail.getLeft();
+        }
+        ship.setPositionOfHead(newHead.getPosition());
+        OrientationOfShip newOrientation = (orientation == OrientationOfShip.HORIZONTAL) ?
+                OrientationOfShip.VERTICAL : OrientationOfShip.HORIZONTAL;
+        ship.shipRotation(newOrientation);
+        movingTOHead = movingTOHead.getLeft();
+        for (int i = 0; i < numberOfIteratingBack; i++) {
+            newHead.getCell().shipSailTo(ship);
+            movingTOHead.getCell().shipSailedAway();
+            newHead = newHead.getUp();
+            movingTOHead = movingTOHead.getLeft();
+        }
+        movingToTail = movingToTail.getRight();
+        for (int i = 0; i < cont - 1; i++) {
+            newTail.getCell().shipSailTo(ship);
+            movingToTail.getCell().shipSailedAway();
+            newTail = newTail.getDown();
+            movingToTail = movingToTail.getRight();
+        }
+        return true;
+    }
 
     public static void main(String[] args) {
         GameField field1 = new GameField(20, 10);
         Visualizer visualizer = new Visualizer(field1.field);
         visualizer.printField();
-        ProtoShip ship = new Ship(3, new Position(4, 6), OrientationOfShip.VERTICAL);
+        ProtoShip ship = new Ship(3, new Position(4, 2), OrientationOfShip.HORIZONTAL);
         field1.addShip(ship);
-        System.out.println(ship.getHeadOfShip().getX() + "   " + ship.getHeadOfShip().getY());
         visualizer.printField();
-        System.out.println(ship.getHeadOfShip().getX() + "   " + ship.getHeadOfShip().getY());
-        field1.moveShipUp(ship);
+        field1.clockwiseRotation(ship);
         visualizer.printField();
-        System.out.println(ship.getHeadOfShip().getX() + "   " + ship.getHeadOfShip().getY());
-        field1.moveShipUp(ship);
+        field1.moveShipDown(ship);
         visualizer.printField();
-        System.out.println(ship.getHeadOfShip().getX() + "   " + ship.getHeadOfShip().getY());
-        field1.moveShipUp(ship);
-        visualizer.printField();
-        System.out.println(ship.getHeadOfShip().getX() + "   " + ship.getHeadOfShip().getY());
     }
 }

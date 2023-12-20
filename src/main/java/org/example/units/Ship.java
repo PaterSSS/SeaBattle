@@ -70,4 +70,14 @@ public class Ship implements ProtoShip{
     public void setStuck() {
         isStuck = true;
     }
+
+    @Override
+    public void setPositionOfHead(Position position) {
+        this.posOfShipHead = position;
+    }
+
+    @Override
+    public void shipRotation(OrientationOfShip orientation) {
+        this.orientation = orientation;
+    }
 }

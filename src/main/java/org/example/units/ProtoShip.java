@@ -12,4 +12,6 @@ public interface ProtoShip {
     OrientationOfShip getOrientation();
     boolean isShipStuck();
     void setStuck();
+    void setPositionOfHead(Position position);
+    void shipRotation(OrientationOfShip orientation);
 }
