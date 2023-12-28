@@ -3,6 +3,8 @@ package org.example.units;
 import org.example.field.fieldStructure.Position;
 
 public class Ship implements ProtoShip{
+    //сделать битовую маску чтобы можно было задавать разные состояние как раненные и может двигаться и добавить енам
+    //в котором будут указываться эти состояния
     private int health;
     private final int size;
     private Position posOfShipHead;

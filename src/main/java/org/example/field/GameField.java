@@ -85,9 +85,9 @@ public class GameField {
     }
 
     public boolean moveShip(ProtoShip ship, OrientationOfShip incorrectOrientation,
-                                 UnaryOperator<Node> wayOfIterating,
-                                 UnaryOperator<Node> iterateInOppositeDirection,
-                                 int deltaX, int deltaY) {
+                            UnaryOperator<Node> wayOfIterating,
+                            UnaryOperator<Node> iterateInOppositeDirection,
+                            int deltaX, int deltaY) {
         OrientationOfShip orientation = ship.getOrientation();
         if (orientation == incorrectOrientation) {
             return false;
@@ -114,15 +114,24 @@ public class GameField {
     public boolean moveShipRight(ProtoShip ship) {
         return moveShip(ship, OrientationOfShip.VERTICAL, Node::getRight, Node::getLeft, 1, 0);
     }
+
     public boolean moveShipLeft(ProtoShip ship) {
         return moveShip(ship, OrientationOfShip.VERTICAL, Node::getLeft, Node::getRight, -1, 0);
     }
+
     public boolean moveShipUp(ProtoShip ship) {
         return moveShip(ship, OrientationOfShip.HORIZONTAL, Node::getUp, Node::getDown, 0, -1);
     }
+
     public boolean moveShipDown(ProtoShip ship) {
         return moveShip(ship, OrientationOfShip.HORIZONTAL, Node::getDown, Node::getUp, 0, 1);
     }
+
+    /**
+     * @param iterateWay - метод итерирования по клеткам
+     * @return false, если итерируясь заданным в аргументах способом мы попали на клетку, на которой тот же корабль
+     * true, если на этой клетке нет заданного корабля.
+     */
     private boolean isHeadOfShipInProperDirection(ProtoShip ship, UnaryOperator<Node> iterateWay, Node head) {
         Node cellForTest = iterateWay.apply(head);
         return !(cellForTest.getCell().getShip() == ship);
@@ -133,97 +142,150 @@ public class GameField {
         head = wayOfIterating.apply(head);
         TypeOfCell type = head.getCell().getTypeOfCell();
         if (type == TypeOfCell.BARRIER) {
-            getDamageByCollision(ship);
+            damageByCollision(ship);
             return true;
         } else if (type == TypeOfCell.PART_OF_SHIP) {
-            getDamageByCollision(ship);
-            getDamageByCollision(head.getCell().getShip());
+            damageByCollision(ship);
+            damageByCollision(head.getCell().getShip());
             return true;
         }
         return false;
     }
 
-    private void getDamageByCollision(ProtoShip ship) {
+    private void damageByCollision(ProtoShip ship) {
         int maximumHealthOfShip = ship.getSizeOfShip();
         int damage = random.nextInt(maximumHealthOfShip) + 1;
         ship.getDamage(damage);
     }
     public boolean clockwiseRotation(ProtoShip ship) {
-        int centerOfShip = ((ship.getSizeOfShip() + 2 - 1)/2);
+        return shipRotation(ship, true);
+    }
+    public boolean counterclockwiseRotation(ProtoShip ship) {
+        return shipRotation(ship, false);
+    }
+    private boolean shipRotation(ProtoShip ship, boolean clockwiseRotation) {
+        if (ship.getOrientation() == OrientationOfShip.SINGLE_DECK) {
+            return false;
+        }
+
+        int centerOfShip = ((ship.getSizeOfShip() + 1) / 2);
         int numberOfIteratingBack = ship.getSizeOfShip() - centerOfShip;
         Node headOfShip = field.getCellByPosition(ship.getHeadOfShip());
         OrientationOfShip orientation = ship.getOrientation();
-        UnaryOperator<Node> iteratingWay;
+        UnaryOperator<Node> iteratingToShipCenter; // в какую сторону нужно итерировать, чтобы к центру корабля попасть
+        UnaryOperator<Node> iteratingCellByRotation; // способ перебирать клетки которые проверяются для того чтобы голову корабля поместить
+        UnaryOperator<Node> iteratingCellAgainstRotation; // проверяем клетки в которые хвост встанет
+        UnaryOperator<Node> iteratingFromTheShipCenter; // нужно, чтобы вернуться к голове корабля.
+        OrientationOfShip newOrientationOfShip;
+        //это полнейшая шляпа, но я пока не знаю, как по-нормальному разобраться с этими ифами.
         if (orientation == OrientationOfShip.HORIZONTAL) {
-            iteratingWay = (isHeadOfShipInProperDirection(ship, Node::getRight, headOfShip) ? Node::getLeft : Node::getRight);
+            if (isHeadOfShipInProperDirection(ship, Node::getRight, headOfShip)) {
+                iteratingToShipCenter = Node::getLeft;
+                iteratingFromTheShipCenter = Node::getRight;
+                if (clockwiseRotation) {
+                    iteratingCellByRotation = Node::getDown;
+                    iteratingCellAgainstRotation = Node::getUp;
+                } else {
+                    iteratingCellByRotation = Node::getUp;
+                    iteratingCellAgainstRotation = Node::getDown;
+                }
+            } else {
+                iteratingToShipCenter = Node::getRight;
+                iteratingFromTheShipCenter = Node::getLeft;
+                if (clockwiseRotation) {
+                    iteratingCellByRotation = Node::getUp;
+                    iteratingCellAgainstRotation = Node::getDown;
+                } else {
+                    iteratingCellByRotation = Node::getDown;
+                    iteratingCellAgainstRotation = Node::getUp;
+                }
+            }
+            newOrientationOfShip = OrientationOfShip.VERTICAL;
         } else {
-            iteratingWay = (isHeadOfShipInProperDirection(ship, Node::getDown, headOfShip) ? Node::getUp : Node::getDown);
+            if (isHeadOfShipInProperDirection(ship, Node::getUp, headOfShip)) {
+                iteratingToShipCenter = Node::getDown;
+                iteratingFromTheShipCenter = Node::getUp;
+                if (clockwiseRotation) {
+                    iteratingCellByRotation = Node::getRight;
+                    iteratingCellAgainstRotation = Node::getLeft;
+                } else {
+                    iteratingCellByRotation = Node::getLeft;
+                    iteratingCellAgainstRotation = Node::getRight;
+                }
+            } else {
+                iteratingToShipCenter = Node::getUp;
+                iteratingFromTheShipCenter = Node::getDown;
+                if (clockwiseRotation) {
+                    iteratingCellByRotation = Node::getLeft;
+                    iteratingCellAgainstRotation = Node::getRight;
+                } else {
+                    iteratingCellByRotation = Node::getRight;
+                    iteratingCellAgainstRotation = Node::getLeft;
+                }
+            }
+            newOrientationOfShip = OrientationOfShip.HORIZONTAL;
         }
-        Node centerOfShipNode = headOfShip;
+
+        Node centerOfShipNode = headOfShip; // нода указывающая на центр корабля
         for (int i = 0; i < numberOfIteratingBack; i++) {
-            centerOfShipNode = iteratingWay.apply(centerOfShipNode);
+            centerOfShipNode = iteratingToShipCenter.apply(centerOfShipNode);
         }
-        int countOfCellToCheckDown = numberOfIteratingBack;
-        int countOfCellToCheckUp = (ship.getSizeOfShip() % 2 == 0) ? countOfCellToCheckDown - 1 : countOfCellToCheckDown;
+        int countOfCellToCheckDown = numberOfIteratingBack; // если поворачиваем по часовой, то количество клеток занятых после поворота равно кол-во клеток до центра
+        int countOfCellToCheckUp = (ship.getSizeOfShip() % 2 == 0) ? countOfCellToCheckDown - 1 : countOfCellToCheckDown; // кол-во клеток для провекри места, где будет хвост корабля
+        // если по часовой то так как написано рассчитывается, если против то значения переменных меняются местами.
+        int count = (ship.getSizeOfShip() < 3) ? 0 : ((ship.getSizeOfShip() + 2 - 1) / 2);
 
         Node movingToTail = centerOfShipNode;
         Node movingTOHead = centerOfShipNode;
 
-        Node newTail = null;
-        Node newHead = null;
+        Node newHead = checkSpaceForShipRotate(movingTOHead, numberOfIteratingBack + 1,
+                countOfCellToCheckDown, iteratingFromTheShipCenter, iteratingCellByRotation); // сделать методы, которые будут проверять, можно ли расположит так корабль. Будут возвращать ноду нового хвоста или головы
+        Node newTail = checkSpaceForShipRotate(movingToTail, count, countOfCellToCheckUp, iteratingToShipCenter, iteratingCellAgainstRotation); // если вернули null, то так корабль поместить нельзя проверки сделаем и всё будет в ажуре.
 
-        UnaryOperator<Node> iterateCell = Node::getDown;
-        for (int i = 0; i < numberOfIteratingBack + 1; i++) {
-            Node tmp = movingTOHead;
-            int countToCheck = (i == 1) ? 0 : i;
-            for (int j = countToCheck; j < countOfCellToCheckDown; j++) {
-                tmp = iterateCell.apply(tmp);
-                TypeOfCell type = tmp.getCell().getTypeOfCell();
-                if (type == TypeOfCell.BARRIER || type == TypeOfCell.PART_OF_SHIP) {
-                    return false;
-                }
-            }
-            if (i == 0) {
-                newHead = tmp;
-            }
-            movingTOHead = movingTOHead.getRight();
-        }
-        UnaryOperator<Node> iterate = Node::getUp;
-        int cont = (ship.getSizeOfShip() < 3) ? 0 : ((ship.getSizeOfShip() + 2 - 1)/2);
-        for (int i = 0; i < cont; i++) {
-            Node tmp = movingToTail;
-            int countToCheck = (i == 1) ? 0 : i;
-            for (int j = countToCheck; j < countOfCellToCheckUp; j++) {
-                tmp = iterate.apply(tmp);
-                TypeOfCell type = tmp.getCell().getTypeOfCell();
-                if (type == TypeOfCell.BARRIER || type == TypeOfCell.PART_OF_SHIP) {
-                    return false;
-                }
-            }
-            if (i == 0) {
-                newTail = tmp;
-            }
-            movingToTail = movingToTail.getLeft();
+        if (newHead == null || newTail == null) {
+            return false;
         }
         ship.setPositionOfHead(newHead.getPosition());
-        OrientationOfShip newOrientation = (orientation == OrientationOfShip.HORIZONTAL) ?
-                OrientationOfShip.VERTICAL : OrientationOfShip.HORIZONTAL;
-        ship.shipRotation(newOrientation);
-        movingTOHead = movingTOHead.getLeft();
-        for (int i = 0; i < numberOfIteratingBack; i++) {
-            newHead.getCell().shipSailTo(ship);
-            movingTOHead.getCell().shipSailedAway();
-            newHead = newHead.getUp();
-            movingTOHead = movingTOHead.getLeft();
-        }
-        movingToTail = movingToTail.getRight();
-        for (int i = 0; i < cont - 1; i++) {
-            newTail.getCell().shipSailTo(ship);
-            movingToTail.getCell().shipSailedAway();
-            newTail = newTail.getDown();
-            movingToTail = movingToTail.getRight();
-        }
+        ship.shipRotation(newOrientationOfShip);
+
+        setNewPositionOfShip(movingTOHead, newHead, ship, numberOfIteratingBack, iteratingToShipCenter, iteratingCellAgainstRotation);
+        setNewPositionOfShip(movingToTail, newTail, ship, count - 1, iteratingFromTheShipCenter, iteratingCellByRotation);
         return true;
+    }
+
+    private Node checkSpaceForShipRotate(Node shipCenterNode, int countOfShipCells,
+                                         int countOfCellsToCheck, UnaryOperator<Node> iterateOnShip,
+                                         UnaryOperator<Node> iterateToCheckCells) {
+        Node newExtremePointOfShip = null;
+        for (int i = 0; i < countOfShipCells; i++) {
+            Node tmp = shipCenterNode;
+            int countToCheck = (i == 1) ? 0 : i;
+            for (int j = countToCheck; j < countOfCellsToCheck; j++) {
+                tmp = iterateToCheckCells.apply(tmp);
+                TypeOfCell type = tmp.getCell().getTypeOfCell();
+                if (type == TypeOfCell.BARRIER || type == TypeOfCell.PART_OF_SHIP) {
+                    return null;
+                }
+            }
+            if (i == 0) {
+                newExtremePointOfShip = tmp;
+            }
+            shipCenterNode = iterateOnShip.apply(shipCenterNode);
+        }
+        return newExtremePointOfShip;
+    }
+
+    private void setNewPositionOfShip(Node extremePartOfShip, Node newEndingOfShip, ProtoShip ship,
+                                      int numberOfCells, UnaryOperator<Node> iterateOnShip,
+                                      UnaryOperator<Node> iterateOnCells) {
+
+        extremePartOfShip = iterateOnShip.apply(extremePartOfShip);
+        for (int i = 0; i < numberOfCells; i++) {
+            newEndingOfShip.getCell().shipSailTo(ship);
+            extremePartOfShip.getCell().shipSailedAway();
+            newEndingOfShip = iterateOnCells.apply(newEndingOfShip);
+            extremePartOfShip = iterateOnShip.apply(extremePartOfShip);
+        }
     }
 
     public static void main(String[] args) {
@@ -235,7 +297,9 @@ public class GameField {
         visualizer.printField();
         field1.clockwiseRotation(ship);
         visualizer.printField();
-        field1.moveShipDown(ship);
+        field1.clockwiseRotation(ship);
+        visualizer.printField();
+        field1.moveShipLeft(ship);
         visualizer.printField();
     }
 }
