@@ -16,16 +16,8 @@ public class Ship implements ProtoShip{
         this.size = size;
         this.health = size;
         this.posOfShipHead = position;
-        calculateShootingDis();
         this.orientation = orientation;
-    }
-    private void calculateShootingDis() {
-        switch (size) {
-            case 1 -> shootingDistance = 4;
-            case 2 -> shootingDistance = 6;
-            case 3 -> shootingDistance = 8;
-            case 4 -> shootingDistance = 10;
-        }
+        this.shootingDistance = size * 2;
     }
     @Override
     public int getHealth() {

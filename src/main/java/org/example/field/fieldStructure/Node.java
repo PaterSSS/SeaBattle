@@ -4,7 +4,7 @@ import org.example.field.Cell;
 
 public class Node {
     private Cell cell;
-    private Position position;
+    private final Position position;
     private Node up;
     private Node left;
     private Node right;
