@@ -13,6 +13,7 @@ public class Visualizer {
     private static final String signForWater ="~";
     private static final String signForBarrier = "x";
     private static final String signForShip = "s";
+    private static final String signForShoal = "a";
     private Structure field;
     public Visualizer(Structure field) {
         this.field = field;
@@ -25,6 +26,7 @@ public class Visualizer {
                     case EMPTY -> System.out.print(signForWater);
                     case PART_OF_SHIP -> System.out.print(signForShip);
                     case BARRIER -> System.out.print(signForBarrier);
+                    case SHOAL -> System.out.print(signForShoal);
                 }
             }
             System.out.println();

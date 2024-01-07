@@ -25,4 +25,16 @@ public class Position {
     public int hashCode() {
         return Objects.hash(x, y);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Position)) {
+            return false;
+        }
+        Position tmp = (Position) obj;
+        return this.x == tmp.x && this.y == tmp.y;
+    }
 }

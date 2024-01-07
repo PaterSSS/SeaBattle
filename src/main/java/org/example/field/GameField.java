@@ -321,7 +321,7 @@ public class GameField {
         field1.addShip(ship1);
         visualizer.printField();
         System.out.println("Second ship has " + ship1.getHealth() + " hp");
-        field1.shoot(ship, new Position(10,2));
+        field1.shoot(ship, new Position(11,2));
         System.out.println("Second ship has " + ship1.getHealth() + " hp");
         visualizer.printField();
         field1.shoot(ship, new Position(10,2));
