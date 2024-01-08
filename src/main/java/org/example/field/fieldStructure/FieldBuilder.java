@@ -49,22 +49,22 @@ public class FieldBuilder {
         }
     }
     //x - barrier, s - part of a ship, h - head of a ship, ~ - clear water, a - is a shoal.
-    public void readFieldFromFile() {
-        readFieldFromFile(pathToFile);
+    public Map<String, List<ProtoShip>> readFieldFromFile() {
+        return readFieldFromFile(pathToFile);
     }
-    public void readFieldFromFile(String path) {
+    public Map<String, List<ProtoShip>> readFieldFromFile(String path) {
         try {
             List<String> stringList = Files.readAllLines(Path.of(path));
             this.height = stringList.size();
             this.width = stringList.get(0).length();
-            createFieldFromFile(stringList);
+            return createFieldFromFile(stringList);
         } catch (IOException e) {
             //TODO write my own exceptions for game.
             throw new RuntimeException(e);
         }
 
     }
-    private void createFieldFromFile(List<String> list) {
+    private Map<String, List<ProtoShip>> createFieldFromFile(List<String> list) {
         field = new Structure();
         Map<String, List<ProtoShip>> playersShips = new HashMap<>();
         Map<Position, ProtoShip> positionProtoShipMap = new HashMap<>();
@@ -84,6 +84,7 @@ public class FieldBuilder {
                 }
                 }
         }
+        return playersShips;
     }
     private void handleShip(int row, int col, Map<Position, ProtoShip> positionProtoShipMap,
                             Map<String, List<ProtoShip>> playersShips, List<String> list) {
@@ -142,7 +143,6 @@ public class FieldBuilder {
 
         ProtoShip ship = new Ship(sizeOfShip, posOfHead, orientation);
         for (int currentRow = row; currentRow < row + deltaY; currentRow++) {
-            String stringToCheck = list.get(currentRow);
             for (int currentCol = col; currentCol < col + deltaX; currentCol++) {
                 positionProtoShipMap.put(new Position(currentCol, currentRow), ship);
             }

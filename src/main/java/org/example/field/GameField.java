@@ -2,6 +2,7 @@ package org.example.field;
 
 import org.example.consoleUI.Visualizer;
 import org.example.field.fieldStructure.*;
+import org.example.gameAI.RandomBot;
 import org.example.units.OrientationOfShip;
 import org.example.units.ProtoShip;
 import org.example.units.Ship;
@@ -287,7 +288,7 @@ public class GameField {
             extremePartOfShip = iterateOnShip.apply(extremePartOfShip);
         }
     }
-    //добавлю новую механику. Можно будет выстрелить в барьер и он разрушится и там можно будет плыть.
+    // Добавлю новую механику. Можно будет выстрелить в барьер и он разрушится и там можно будет плыть.
     public boolean shoot(ProtoShip ship, Position cellToShoot) {
         int xShoot = cellToShoot.getX();
         int yShoot = cellToShoot.getY();
@@ -298,7 +299,7 @@ public class GameField {
         int yShip = ship.getHeadOfShip().getY();
 
         double distanceToShoot = Math.sqrt((xShoot - xShip)*(xShoot - xShip) + (yShoot - yShip)*(yShoot - yShip));
-        if (distanceToShoot > ship.getShootingDistance()) {
+        if (distanceToShoot > (double) ship.getShootingDistance()) {
             return false;
         }
         Cell cellToCheck = field.getCellByPosition(cellToShoot).getCell();
@@ -313,19 +314,7 @@ public class GameField {
         return false;
     }
     public static void main(String[] args) {
-        GameField field1 = new GameField(20, 10);
-        Visualizer visualizer = new Visualizer(field1.field);
-        ProtoShip ship = new Ship(3, new Position(4, 2), OrientationOfShip.HORIZONTAL);
-        ProtoShip ship1 = new Ship(2, new Position(10, 2), OrientationOfShip.VERTICAL);
-        field1.addShip(ship);
-        field1.addShip(ship1);
-        visualizer.printField();
-        System.out.println("Second ship has " + ship1.getHealth() + " hp");
-        field1.shoot(ship, new Position(11,2));
-        System.out.println("Second ship has " + ship1.getHealth() + " hp");
-        visualizer.printField();
-        field1.shoot(ship, new Position(10,2));
-        System.out.println("Second ship has " + ship1.getHealth() + " hp");
-        visualizer.printField();
+
+
     }
 }
