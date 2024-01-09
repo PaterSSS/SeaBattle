@@ -7,14 +7,17 @@ import org.example.units.OrientationOfShip;
 import org.example.units.ProtoShip;
 import org.example.units.Ship;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.UnaryOperator;
 
 public class GameField {
     private Structure field;
-    private final int fieldWidth;
-    private final int fieldHeight;
+    private int fieldWidth;
+    private int fieldHeight;
     private final Random random = new Random();
+    private Map<String, List<ProtoShip>> shipsOfPlayers;
 
     public GameField(int width, int height) {
         this.fieldHeight = height;
@@ -23,7 +26,13 @@ public class GameField {
         builder.createEmptyField();
         field = builder.getField();
     }
-
+    public GameField(String path) {
+        FieldBuilder builder = new FieldBuilder(path);
+        shipsOfPlayers = builder.readFieldFromFile();
+        field = builder.getField();
+        this.fieldWidth = builder.getWidth();
+        this.fieldHeight = builder.getHeight();
+    }
     public boolean addShip(ProtoShip ship) {
         Position headOfShip = ship.getHeadOfShip();
         int length = ship.getSizeOfShip();
@@ -306,15 +315,25 @@ public class GameField {
 
         if (cellToCheck.getTypeOfCell() == TypeOfCell.PART_OF_SHIP) {
             cellToCheck.getShip().getDamage(1);
-        } else if (cellToCheck.getTypeOfCell() == TypeOfCell.BARRIER && (xShoot != 0 && xShoot != (fieldWidth - 1)
-                && yShoot != 0 && yShoot != (fieldHeight -1 ))) {
-            cellToCheck.setTypeOfCell(TypeOfCell.EMPTY);
+//        } else if (cellToCheck.getTypeOfCell() == TypeOfCell.BARRIER && (xShoot != 0 && xShoot != (fieldWidth - 1)
+//                && yShoot != 0 && yShoot != (fieldHeight -1 ))) {
+//            cellToCheck.setTypeOfCell(TypeOfCell.EMPTY);
+//        }
         }
-
         return false;
     }
-    public static void main(String[] args) {
+    public Structure getField() {
+        return field;
+    }
+    public Map<String, List<ProtoShip>> getShipsOfPlayers() {
+        return shipsOfPlayers;
+    }
 
+    public int getFieldWidth() {
+        return fieldWidth;
+    }
 
+    public int getFieldHeight() {
+        return fieldHeight;
     }
 }

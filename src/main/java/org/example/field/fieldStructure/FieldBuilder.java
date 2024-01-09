@@ -1,7 +1,9 @@
 package org.example.field.fieldStructure;
 
+import org.example.GameLoop;
 import org.example.consoleUI.Visualizer;
 import org.example.field.Cell;
+import org.example.field.GameField;
 import org.example.units.OrientationOfShip;
 import org.example.units.ProtoShip;
 import org.example.units.Ship;
@@ -153,11 +155,12 @@ public class FieldBuilder {
         return field;
     }
 
-    public static void main(String[] args) {
-        FieldBuilder fieldBuilder = new FieldBuilder("C:\\Материалы ВУЗ\\3й семестр\\ООП\\projects\\SeaBattle\\src\\main\\java\\fieldExample.txt");
-        fieldBuilder.readFieldFromFile();
-        System.out.println();
-        Visualizer visualizer = new Visualizer(fieldBuilder.field);
-        visualizer.printField();
+    public int getWidth() {
+        return width;
     }
+
+    public int getHeight() {
+        return height;
+    }
+
 }
